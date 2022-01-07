@@ -1,5 +1,5 @@
 import {Router, Response, Request, NextFunction} from "express";
-import JWT from "jsonwebtoken";
+import JWT, { SignOptions } from "jsonwebtoken";
 import { StatusCodes } from "http-status-codes";
 import ForbiddenError from "../models/errors/forbidden.error.model";
 import jwtAuthenticationMiddleware from "../middlewares/jwt-authentication.middleware";
@@ -16,7 +16,7 @@ authorizationRoute.post('/token', basicAuthenticationMiddleware, async (req: Req
         }
 
         const jwtPayload = {username: user.username};
-        const jwtOptions = {subject: user?.uuid};
+        const jwtOptions: SignOptions = {subject: user?.uuid, expiresIn: 60000};
         const secretKey = 'my_secret_key';
         const jwt = JWT.sign(jwtPayload, secretKey, jwtOptions);
         res.status(StatusCodes.OK).json({token: jwt});
@@ -27,6 +27,24 @@ authorizationRoute.post('/token', basicAuthenticationMiddleware, async (req: Req
 
 authorizationRoute.post('/token/validate', jwtAuthenticationMiddleware, (req: Request, res: Response, next: NextFunction) => {
     res.sendStatus(StatusCodes.OK);
+});
+
+//REFRESH TOKEN
+authorizationRoute.post('/token/refresh', jwtAuthenticationMiddleware, async (req: Request, res: Response, next: NextFunction) => {
+    try{
+        const user = req.user;
+        if(!user){
+            throw new ForbiddenError('Usuário não informado!');
+        }
+
+        const jwtPayload = {username: user.username};
+        const jwtOptions: SignOptions = {subject: user?.uuid, expiresIn: '15m'};
+        const secretKey = 'my_secret_key';
+        const jwt = JWT.sign(jwtPayload, secretKey, jwtOptions);
+        res.status(StatusCodes.OK).json({token: jwt});
+    }catch(error){
+        next(error);
+    }
 });
 
 export default authorizationRoute;
