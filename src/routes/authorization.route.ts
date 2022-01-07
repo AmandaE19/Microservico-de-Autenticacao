@@ -1,13 +1,14 @@
 import {Router, Response, Request, NextFunction} from "express";
 import JWT from "jsonwebtoken";
 import { StatusCodes } from "http-status-codes";
-import basicAutheticationMiddleware from "../middlewares/basic-authentication.middleware";
 import ForbiddenError from "../models/errors/forbidden.error.model";
+import jwtAuthenticationMiddleware from "../middlewares/jwt-authentication.middleware";
+import basicAuthenticationMiddleware from "../middlewares/basic-authentication.middleware";
 
 
 const authorizationRoute = Router();
 
-authorizationRoute.post('/token', basicAutheticationMiddleware, async (req: Request, res: Response, next: NextFunction) => {
+authorizationRoute.post('/token', basicAuthenticationMiddleware, async (req: Request, res: Response, next: NextFunction) => {
     try{
         const user = req.user;
         if(!user){
@@ -22,6 +23,10 @@ authorizationRoute.post('/token', basicAutheticationMiddleware, async (req: Requ
     }catch(error){
         next(error);
     }
+});
+
+authorizationRoute.post('/token/validate', jwtAuthenticationMiddleware, (req: Request, res: Response, next: NextFunction) => {
+    res.sendStatus(StatusCodes.OK);
 });
 
 export default authorizationRoute;

@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response, Router } from "express";
 import {StatusCodes} from "http-status-codes";
+import jwtAuthenticationMiddleware from "../middlewares/jwt-authentication.middleware";
 import DataBaseError from "../models/errors/database.error.model";
 import userRepository from "../repositories/user.repository";
 
